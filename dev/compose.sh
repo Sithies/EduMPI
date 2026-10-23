@@ -5,10 +5,13 @@
 # Erzwingen: EDUMPI_ENGINE=docker|podman dev/compose.sh …
 set -euo pipefail
 
-FILE="$(cd "$(dirname "$0")" && pwd)/compose.yaml"
+DIR="$(cd "$(dirname "$0")" && pwd)"
+FILES=(-f "$DIR/compose.yaml")
 
 use_docker() { docker info >/dev/null 2>&1; }
 use_podman() { command -v podman >/dev/null 2>&1; }
+# "docker" kann auch Podman sein (podman-docker, podman-mac-helper)
+docker_is_podman() { docker version 2>/dev/null | grep -qi podman; }
 
 engine="${EDUMPI_ENGINE:-}"
 if [[ -z "$engine" ]]; then
@@ -20,21 +23,37 @@ if [[ -z "$engine" ]]; then
     fi
 fi
 
+# Podman (rootless): Einstellungen für den dev-Service, siehe compose.podman.yaml
+if [[ "$engine" == podman ]] || docker_is_podman; then
+    FILES+=(-f "$DIR/compose.podman.yaml")
+elif [[ "$engine" == docker ]]; then
+    # Vor Docker 28 waren auf 127.0.0.1 veröffentlichte Ports aus dem LAN erreichbar –
+    # mit dem öffentlichen Dev-Key wäre das ein offener Zugang zum Cluster
+    v="$(docker version --format '{{.Server.Version}}' 2>/dev/null || true)"
+    if [[ "${v%%.*}" =~ ^[0-9]+$ ]] && (( ${v%%.*} < 28 )); then
+        echo "Warnung: Docker $v – ab 28.0 empfohlen (ältere Versionen machen 127.0.0.1-Ports im LAN erreichbar)" >&2
+    fi
+fi
+
+# Zeitzone des Rechners an den Cluster weitergeben: die GUI vergleicht die Job-Endzeit aus
+# scontrol mit ihrer lokalen Zeit
+if [[ -z "${EDUMPI_TZ:-}" ]]; then
+    EDUMPI_TZ="${TZ:-$(readlink /etc/localtime 2>/dev/null | sed 's#.*/zoneinfo/##')}"
+    export EDUMPI_TZ="${EDUMPI_TZ:-UTC}"
+fi
+
 case "$engine" in
     docker)
         if docker compose version >/dev/null 2>&1; then
-            exec docker compose -f "$FILE" "$@"
+            exec docker compose "${FILES[@]}" "$@"
         fi
-        exec docker-compose -f "$FILE" "$@"
+        exec docker-compose "${FILES[@]}" "$@"
         ;;
     podman)
-        # Rootless Podman: eigene UID im Container behalten, sonst gehört das
-        # eingebundene Repo im Container root und der Nutzer vscode kann nicht schreiben
-        export PODMAN_USERNS="${PODMAN_USERNS:-keep-id}"
         if command -v podman-compose >/dev/null 2>&1; then
-            exec podman-compose -f "$FILE" "$@"
+            exec podman-compose "${FILES[@]}" "$@"
         fi
-        exec podman compose -f "$FILE" "$@"
+        exec podman compose "${FILES[@]}" "$@"
         ;;
     *)
         echo "Unbekannte Engine: $engine (docker oder podman)" >&2

@@ -1,0 +1,32 @@
+# Nur per "source" verwenden (bash oder zsh):
+#   source dev/ssh/activate
+# Stellt dev/ssh/bin vorne in den PATH dieser Shell. Programme, die von hier aus gestartet
+# werden (z. B. die EduMPI-GUI), erreichen dann den Dev-Container unter dem Host "edumpi-dev".
+# Rückgängig: edumpi_dev_deactivate (oder Shell schließen).
+
+if [ -n "${BASH_SOURCE:-}" ]; then
+    _edumpi_src="${BASH_SOURCE[0]}"
+elif [ -n "${ZSH_VERSION:-}" ]; then
+    _edumpi_src="${(%):-%x}"
+else
+    echo "dev/ssh/activate: bitte mit bash oder zsh per 'source' laden" >&2
+    return 1 2>/dev/null || exit 1
+fi
+_edumpi_bin="$(cd "$(dirname "$_edumpi_src")/bin" && pwd)"
+unset _edumpi_src
+
+case ":$PATH:" in
+    *":$_edumpi_bin:"*) ;;
+    *) EDUMPI_DEV_OLD_PATH="$PATH"; export PATH="$_edumpi_bin:$PATH" ;;
+esac
+unset _edumpi_bin
+
+edumpi_dev_deactivate() {
+    if [ -n "${EDUMPI_DEV_OLD_PATH:-}" ]; then
+        export PATH="$EDUMPI_DEV_OLD_PATH"
+        unset EDUMPI_DEV_OLD_PATH
+    fi
+    unset -f edumpi_dev_deactivate
+}
+
+echo "edumpi-dev aktiv: ssh/scp zu 'edumpi-dev' gehen an den Dev-Container (127.0.0.1:${EDUMPI_DEV_SSH_PORT:-2222})"

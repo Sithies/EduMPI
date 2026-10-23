@@ -599,3 +599,6 @@ compile_commands.json
 # Lokale Editor-/Dev-Container-Konfiguration
 .vscode/
 .devcontainer/
+
+# ssh/scp-Wrapper des Dev-Containers (oben werden alle bin/ ignoriert)
+!/dev/ssh/bin

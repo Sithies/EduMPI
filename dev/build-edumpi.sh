@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Baut EduMPI (im Dev-Container oder nativ) und installiert nach $EDUMPI_PREFIX.
+# Baut EduMPI (im Dev-Container oder nativ) und installiert nach $EDUMPI_PREFIX
+# (im Dev-Container /opt/edumpi, ein Volume, das login und node1..4 mitbenutzen).
 # bear erzeugt dabei compile_commands.json für clangd.
 #   dev/build-edumpi.sh          # inkrementell
 #   dev/build-edumpi.sh --clean  # autogen + configure neu
