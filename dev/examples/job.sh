@@ -15,4 +15,4 @@ export OMPI_MCA_coll_han_priority=0
 export EDUMPI_PROGRAM=edumpi_test.c
 
 /opt/edumpi/bin/mpicc edumpi_test.c -o edumpi_test -lm
-/opt/edumpi/bin/mpirun -n "$SLURM_NTASKS" --map-by :PE=2 --mca pml ob1 ./edumpi_test "${EDUMPI_TEST_SECONDS:-15}"
+/opt/edumpi/bin/mpirun -n "$SLURM_NTASKS" --map-by :PE=2 --mca pml ob1 ./edumpi_test ${EDUMPI_TEST_SECONDS:-60} ${EDUMPI_TEST_PHASE:-5}

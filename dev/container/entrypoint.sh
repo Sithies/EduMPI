@@ -7,6 +7,12 @@ set -euo pipefail
 
 role="${EDUMPI_ROLE:-dev}"
 
+# slurm.conf aus der Vorlage: Größe der Nodes passend zum Rechner (in allen Containern gleich)
+node_cpus="${EDUMPI_NODE_CPUS:-4}"
+node_mem="${EDUMPI_NODE_MEM:-2000}"
+sed -e "s/@NODE_CPUS@/$node_cpus/" -e "s/@NODE_MEM@/$node_mem/" \
+    /etc/edumpi/slurm.conf.in > /etc/slurm/slurm.conf
+
 # munge: gemeinsamer Key aus dem Image, munged läuft als Nutzer munge
 install -o munge -g munge -m 0400 /etc/edumpi/munge.key /etc/munge/munge.key
 install -d -o munge -g munge -m 0755 /run/munge

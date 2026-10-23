@@ -24,7 +24,8 @@ RUN useradd -m -u 1001 -s /bin/bash dev \
     && install -d -o vscode -g vscode /opt/edumpi
 
 # Slurm: Konfiguration und fester (unsicherer) Dev-Munge-Key, in allen Containern gleich
-COPY slurm/slurm.conf slurm/cgroup.conf /etc/slurm/
+COPY slurm/cgroup.conf /etc/slurm/
+COPY slurm/slurm.conf /etc/edumpi/slurm.conf.in
 COPY slurm/munge.key /etc/edumpi/munge.key
 
 # SSH: feste Host-Keys und der Dev-Key aus dev/ssh/ – nach jedem Neubau dieselbe Identität

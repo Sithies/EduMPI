@@ -42,6 +42,27 @@ if [[ -z "${EDUMPI_TZ:-}" ]]; then
     export EDUMPI_TZ="${EDUMPI_TZ:-UTC}"
 fi
 
+# Node-Größe passend zur Container-Engine (bei Docker Desktop/podman machine: deren VM).
+# 4 Nodes teilen sich die CPUs; gerade Zahl, mindestens 2 (die GUI bindet je Rank 2 CPUs).
+# Mehr Slurm-CPUs als echte Kerne würde mpirun --map-by :PE=2 scheitern lassen.
+if [[ -z "${EDUMPI_NODE_CPUS:-}" || -z "${EDUMPI_NODE_MEM:-}" ]]; then
+    if [[ "$engine" == podman ]]; then
+        res="$(podman info --format '{{.Host.CPUs}} {{.Host.MemTotal}}' 2>/dev/null || true)"
+    else
+        res="$(docker info --format '{{.NCPU}} {{.MemTotal}}' 2>/dev/null || true)"
+    fi
+    read -r ncpu mem_bytes <<< "$res"
+    if [[ "${ncpu:-}" =~ ^[0-9]+$ && "${mem_bytes:-}" =~ ^[0-9]+$ ]]; then
+        c=$(( ncpu / 4 )); c=$(( c - c % 2 )); (( c < 2 )) && c=2
+        m=$(( mem_bytes / 1024 / 1024 * 8 / 10 / 4 )); (( m < 1000 )) && m=1000
+        export EDUMPI_NODE_CPUS="${EDUMPI_NODE_CPUS:-$c}" EDUMPI_NODE_MEM="${EDUMPI_NODE_MEM:-$m}"
+    fi
+fi
+if [[ "${1:-}" == up ]]; then
+    c="${EDUMPI_NODE_CPUS:-4}"
+    echo "Dev-Cluster: 4 Nodes × $c CPUs, ${EDUMPI_NODE_MEM:-2000} MB → bis $(( 4 * c / 2 )) Ranks im EduMPI-Modus der GUI" >&2
+fi
+
 case "$engine" in
     docker)
         if docker compose version >/dev/null 2>&1; then

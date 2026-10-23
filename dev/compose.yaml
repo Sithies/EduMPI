@@ -16,6 +16,9 @@ x-edumpi-env: &edumpi-env
   TZ: ${EDUMPI_TZ:-UTC}
   # Port, unter dem die DB auf dem Rechner erreichbar ist; derselbe gilt in den Containern
   EDUMPI_DB_PORT: ${EDUMPI_DB_PORT:-5432}
+  # Größe je Slurm-Node (setzt compose.sh passend zum Rechner)
+  EDUMPI_NODE_CPUS: ${EDUMPI_NODE_CPUS:-4}
+  EDUMPI_NODE_MEM: ${EDUMPI_NODE_MEM:-2000}
 
 x-cluster-volumes: &cluster-volumes
   # EduMPI-Installation (gebaut im dev-Container) und /home/dev sind auf allen Nodes gleich,
