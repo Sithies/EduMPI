@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+
+# Build-Toolchain für Open MPI aus Git (autogen.pl braucht Autotools, Flex und Perl),
+# libpq für das EduMPI-Logging, clangd/bear für die Code-Navigation in VS Code,
+# Sphinx für docs/
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
+        build-essential gfortran pkg-config \
+        autoconf automake libtool libtool-bin m4 flex perl \
+        zlib1g-dev \
+        libpq-dev postgresql-client \
+        gdb clangd bear ccache \
+        python3 python3-sphinx python3-sphinx-rtd-theme python3-recommonmark \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV EDUMPI_PREFIX=/home/vscode/edumpi-install
+ENV PATH=${EDUMPI_PREFIX}/bin:${PATH} \
+    LD_LIBRARY_PATH=${EDUMPI_PREFIX}/lib

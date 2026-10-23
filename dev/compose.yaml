@@ -1,0 +1,38 @@
+name: edumpi
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Containerfile
+    volumes:
+      - ..:/workspaces/EduMPI:cached
+    command: sleep infinity
+    # MPI nutzt Shared Memory zwischen den Ranks, die Docker-Vorgabe von 64 MB ist zu knapp
+    shm_size: 1gb
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: edumpi
+      DB_USER: edumpi
+      DB_PW: edumpi
+    depends_on:
+      - db
+
+  db:
+    image: timescale/timescaledb:latest-pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: edumpi
+      POSTGRES_USER: edumpi
+      POSTGRES_PASSWORD: edumpi
+    volumes:
+      - edumpi-db:/var/lib/postgresql/data
+      # Wird nur beim allerersten Start (leeres Volume) ausgeführt
+      - ../EduStore/edustore_schema.sql:/docker-entrypoint-initdb.d/10-edustore_schema.sql:ro
+    ports:
+      # Lokal erreichbar, damit die EduMPI_GUI auf dem Host gegen diese DB laufen kann
+      - "127.0.0.1:5432:5432"
+
+volumes:
+  edumpi-db:

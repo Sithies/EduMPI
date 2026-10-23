@@ -591,3 +591,11 @@ docs/schizo-ompi-rst-content
 # tarballs)
 docs/html
 docs/man
+
+# Devcontainer / clangd
+compile_commands.json
+.cache/
+
+# Lokale Editor-/Dev-Container-Konfiguration
+.vscode/
+.devcontainer/
