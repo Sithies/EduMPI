@@ -87,6 +87,11 @@ anderen Host wird abgelehnt (in zwei Schritten kopieren).
 GUI aus einer Shell mit geladenem `dev/ssh/activate` starten (in Qt Creator/VS Code: `dev/ssh/bin` vorne
 in den `PATH` der Run-Umgebung). Mac: aus dem Terminal starten, der Finder erbt den `PATH` nicht.
 
+In Qt Creator: Projekte → Reiter **Einstellungen zur Ausführung** / **Run** (neben **Deployment-Einstellungen**) →
+unten Block **Umgebung** → **Details** → Zeile `PATH` → **Pfad voranstellen…** / **Prepend Path…** mit
+`/Pfad/zu/EduMPI/dev/ssh/bin`; ohne den Knopf **Bearbeiten** und den Pfad mit Doppelpunkt davorsetzen
+(absolut, `cd dev/ssh/bin && pwd`).
+
 | Formular | Feld | Wert |
 | --- | --- | --- |
 | Cluster | Hostname / Benutzer / Installationspfad | `edumpi-dev` / `dev` / `/opt/edumpi` |

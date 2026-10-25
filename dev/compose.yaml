@@ -30,6 +30,9 @@ services:
   dev:
     <<: *edumpi
     hostname: dev
+    # Das Basis-Image setzt kein WORKDIR; ohne das landen "exec" und Shells in /, und
+    # relative Aufrufe wie "dev/build-edumpi.sh" finden nichts
+    working_dir: /workspaces/EduMPI
     environment:
       <<: *edumpi-env
       EDUMPI_ROLE: dev
