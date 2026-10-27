@@ -47,15 +47,16 @@ Stand sofort.
 
 ## Einstellungen
 
-Umgebungsvariablen, gesetzt vor `compose.sh` bzw. `source dev/ssh/activate`. Nach Änderungen
-`dev/compose.sh up -d`.
+Standardwerte stehen in `dev/gui.env` – eine Quelle für `compose.sh`, `activate` und den Dev-Modus der
+GUI. Gesetzte Umgebungsvariablen haben Vorrang (z. B. `EDUMPI_DB_PORT=5433 dev/compose.sh up -d`).
+Nach Änderungen `dev/compose.sh up -d`.
 
 | Variable | Standard | Wofür |
 | --- | --- | --- |
 | `EDUMPI_NODE_CPUS` | Kerne der Engine ÷ 4, gerade, ≥ 2 | CPUs je Node; Ranks ≤ 4 × CPUs ÷ 2 (die GUI fordert 2 je Rank an). Nicht über die echten Kerne setzen, sonst scheitert `mpirun --map-by :PE=2` |
 | `EDUMPI_NODE_MEM` | 80 % RAM der Engine ÷ 4 | RAM je Node in MB |
-| `EDUMPI_DEV_SSH_PORT` | `2222` | SSH-Port auf dem Rechner; bei `compose.sh` und `activate` gleich setzen |
-| `EDUMPI_DB_PORT` | `5432` | DB-Port auf dem Rechner (z. B. `5433` neben lokalem PostgreSQL); in der GUI denselben eintragen |
+| `EDUMPI_DEV_SSH_PORT` | `2222` (`gui.env`) | SSH-Port auf dem Rechner; bei `compose.sh` und `activate` gleich setzen |
+| `EDUMPI_DB_PORT` | `5432` (`gui.env`) | DB-Port auf dem Rechner (z. B. `5433` neben lokalem PostgreSQL); in der GUI denselben eintragen |
 | `EDUMPI_TZ` | Zeitzone des Rechners | Zeitzone im Cluster (die GUI vergleicht Job-Endzeiten mit ihrer Ortszeit) |
 | `EDUMPI_ENGINE` | automatisch | `docker` oder `podman` erzwingen |
 
@@ -98,6 +99,20 @@ unten Block **Umgebung** → **Details** → Zeile `PATH` → **Pfad voranstelle
 | Datenbank | Host / Port | `127.0.0.1` / `5432` (bzw. `EDUMPI_DB_PORT`) |
 | | DB / Benutzer / Passwort | `edumpi` / `edumpi` / `edumpi` |
 | MPI Application | Number of Processes | höchstens „bis N“ aus der ersten Zeile von `compose.sh up` |
+
+### Dev-Modus der GUI (Auto-Connect)
+
+GUI mit `-DEDUMPI_DEV_MODE=ON` bauen (Release-Builds setzen das nie). Aktiv wird der Modus erst, wenn
+`EDUMPI_DEV_ENV` auf `dev/gui.env` zeigt – das setzt `source dev/ssh/activate` (in Qt Creator zusätzlich
+zum `PATH` als Variable in die Run-Umgebung).
+
+| Verhalten | |
+| --- | --- |
+| Fenstertitel | „EduMPI [DEV]“; fehlt der SSH-Wrapper im `PATH`: „[DEV – SSH-Wrapper fehlt]“ |
+| Start | verbindet automatisch erst die DB, dann den Cluster – Werte aus `gui.env` |
+| Laufend | prüft alle 5 s und verbindet neu, z. B. nach `dev/compose.sh restart` oder wenn die Container erst nach der GUI starten |
+| Formulare | mit den Dev-Werten vorausgefüllt (inkl. Passwort); manuell verbinden = ein Klick |
+| Ohne Flag oder ohne `EDUMPI_DEV_ENV` | GUI wie bisher |
 
 Angepasst an die GUI: Sie gibt ihren DB-Host an die Ranks weiter, deshalb zeigt `127.0.0.1:<DB-Port>` in
 jedem Container per Weiterleitung auf die DB. Ihr `nix-shell -p --run "sbatch …"` bedient ein Ersatz ohne

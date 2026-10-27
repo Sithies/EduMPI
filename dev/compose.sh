@@ -8,6 +8,12 @@ set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 FILES=(-f "$DIR/compose.yaml")
 
+# Gemeinsame Dev-Werte (Ports usw.); bereits gesetzte Variablen haben Vorrang
+while IFS='=' read -r key value; do
+    [[ "$key" =~ ^[A-Z_][A-Z0-9_]*$ ]] || continue
+    [[ -n "${!key:-}" ]] || export "$key=$value"
+done < "$DIR/gui.env"
+
 use_docker() { docker info >/dev/null 2>&1; }
 use_podman() { command -v podman >/dev/null 2>&1; }
 # "docker" kann auch Podman sein (podman-docker, podman-mac-helper)
