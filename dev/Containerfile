@@ -7,9 +7,12 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 #  - Slurm (23.11 aus Ubuntu 24.04), munge, sshd für den simulierten Cluster
 #  - gcc auch auf den Nodes nötig: die GUI kompiliert das Programm im Slurm-Job
 #  - socat leitet 127.0.0.1:5432 auf den DB-Container weiter (siehe entrypoint.sh)
+#  - gcc-13-plugin-dev, binutils-dev, libunwind-dev, cmake (für das von Score-P geladene
+#    libgotcha): Compiler-Instrumentierung, Symbolauflösung und Sampling von
+#    Score-P (Score-P selbst baut dev/build-scorep.sh in ein Volume, nicht ins Image)
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends \
-        build-essential gfortran pkg-config \
+        build-essential gfortran pkg-config gcc-13-plugin-dev binutils-dev libunwind-dev cmake \
         autoconf automake libtool libtool-bin m4 flex perl \
         zlib1g-dev \
         libpq-dev postgresql-client \
@@ -20,8 +23,12 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 # Nutzer für Jobs und SSH-Login; die GUI legt alles unter /home/<user>/eduMPI_files ab.
 # UID 1001, weil 1000 schon vscode ist.
+# Score-P/Scalasca liegen im Volume /opt/perftools; die GUI erwartet sie fest unter
+# /opt/scorep und /opt/scalasca
 RUN useradd -m -u 1001 -s /bin/bash dev \
-    && install -d -o vscode -g vscode /opt/edumpi
+    && install -d -o vscode -g vscode /opt/edumpi /opt/perftools \
+    && ln -s perftools/scorep /opt/scorep \
+    && ln -s perftools/scalasca /opt/scalasca
 
 # Slurm: Konfiguration und fester (unsicherer) Dev-Munge-Key, in allen Containern gleich
 COPY slurm/cgroup.conf /etc/slurm/

@@ -20,7 +20,7 @@ Container taugen nicht für Performance-Aussagen.
 | `db` | TimescaleDB mit `EduStore/edustore_schema.sql` (`127.0.0.1:5432`) |
 
 Alle außer `db` nutzen ein Image. Gemeinsame Volumes wie auf einem echten Cluster: `/opt/edumpi`
-(EduMPI, im `dev`-Container gebaut) und `/home/dev`.
+(EduMPI, im `dev`-Container gebaut), `/opt/perftools` (optional Score-P/Scalasca) und `/home/dev`.
 
 ## Schnellstart
 
@@ -44,6 +44,16 @@ dev/compose.sh exec -u vscode dev dev/build-edumpi.sh    # EduMPI → /opt/edump
 `build-edumpi.sh` baut mit `-DENABLE_ANALYSIS` und `libpq` (sonst Open MPI ohne Messung) und erzeugt
 `compile_commands.json` für clangd. Nach Code-Änderungen erneut ausführen – alle Nodes sehen den neuen
 Stand sofort.
+
+Nur für den Score-P-Modus der GUI, einmalig nach `build-edumpi.sh`:
+
+```sh
+dev/compose.sh exec -u vscode dev dev/build-scorep.sh    # Score-P + Scalasca → /opt/perftools (dauert)
+```
+
+Lädt feste Versionen (Prüfsumme im Skript) und baut sie gegen EduMPI; im Image verlinkt als
+`/opt/scorep` und `/opt/scalasca`, wo die GUI sie erwartet. Bleibt im Volume, auch über Image-Neubauten
+und EduMPI-Neubauten hinweg; erneut bauen mit `--clean`.
 
 ## Einstellungen
 
@@ -123,7 +133,7 @@ Nix (`container/nix-shell`).
 | EduMPI | geht, bis „bis N“ Ranks |
 | ohne EduMPI | läuft mit derselben EduMPI-Installation ohne DB-Variablen: keine Messung, jeder Rank meldet „One or more environment variables are not set“; Zeiten nicht wie reines Open MPI |
 | OpenMP | bis `EDUMPI_NODE_CPUS` Threads (ein Node) |
-| Score-P | geht nicht, Score-P/Scalasca/PAPI fehlen im Image |
+| Score-P | nach `build-scorep.sh`: Messung, OTF2-Trace, `summary.cubex` und Download gehen; die Trace-Analyse (`scout`) stürzt ab, weil sie `MPI_Init_thread` nutzt (siehe „Logging“ unten) |
 
 ## Ohne GUI testen
 

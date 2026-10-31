@@ -24,6 +24,7 @@ x-cluster-volumes: &cluster-volumes
   # EduMPI-Installation (gebaut im dev-Container) und /home/dev sind auf allen Nodes gleich,
   # wie ein geteiltes Dateisystem auf einem echten Cluster
   - edumpi-install:/opt/edumpi
+  - perftools:/opt/perftools
   - dev-home:/home/dev
 
 services:
@@ -44,6 +45,7 @@ services:
     volumes:
       - ..:/workspaces/EduMPI
       - edumpi-install:/opt/edumpi
+      - perftools:/opt/perftools
       - dev-home:/home/dev
     # SELinux (Fedora/RHEL): Repo lesbar machen, ohne es auf dem Host umzulabeln
     security_opt: ["label=disable"]
@@ -58,6 +60,7 @@ services:
       EDUMPI_ROLE: login
     volumes:
       - edumpi-install:/opt/edumpi
+      - perftools:/opt/perftools
       - dev-home:/home/dev
       - slurm-state:/var/lib/slurm/slurmctld
     ports:
@@ -111,5 +114,6 @@ services:
 volumes:
   edumpi-db:
   edumpi-install:
+  perftools:
   dev-home:
   slurm-state:
