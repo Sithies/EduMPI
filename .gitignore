@@ -591,3 +591,14 @@ docs/schizo-ompi-rst-content
 # tarballs)
 docs/html
 docs/man
+
+# Devcontainer / clangd
+compile_commands.json
+.cache/
+
+# Lokale Editor-/Dev-Container-Konfiguration
+.vscode/
+.devcontainer/
+
+# ssh/scp-Wrapper des Dev-Containers (oben werden alle bin/ ignoriert)
+!/dev/ssh/bin
