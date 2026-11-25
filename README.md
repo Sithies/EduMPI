@@ -63,6 +63,14 @@ EduMPI extends Open MPI with a **logging framework** integrated at `MPI_Init`:
 
 ---
 
+## 🧪 Try it locally
+
+A ready-to-run demo starts a small simulated cluster, the database and the GUI on your own machine
+(Docker or Podman; no cluster access, MPI or Qt needed). Step-by-step guide with screenshots
+(German): [docs/user-guide](docs/user-guide/README.md).
+
+---
+
 ## 📊 Performance & Overhead
 
 EduMPI was benchmarked with **NAS Parallel Benchmarks** and **row-wise matrix multiplication**:
